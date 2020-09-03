@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Timer;
+import com.perevodchik.forest.ForestGame;
 import com.perevodchik.forest.collisions.ContactHandler;
 import com.perevodchik.forest.enums.Slot;
 import com.perevodchik.forest.stats.DamageData;
@@ -149,7 +150,7 @@ public abstract class Entity extends Actor {
         ArrayList<AttributeValue> healthAttributeList = new ArrayList<>();
         healthAttributeList.add(new AttributeValue(4f));
         ArrayList<AttributeValue> attackAttributeList = new ArrayList<>();
-        attackAttributeList.add(new AttributeValue(2f));
+        attackAttributeList.add(new AttributeValue(0.2f));
         ArrayList<AttributeValue> healthRegenAttributeList = new ArrayList<>();
         healthRegenAttributeList.add(new AttributeValue(1f));
         ArrayList<AttributeValue> energyRegenAttributeList = new ArrayList<>();
@@ -322,6 +323,8 @@ public abstract class Entity extends Actor {
     }
 
     public void setVelocity(float x, float y) {
+        if(ForestGameScreen.isPause)
+            return;
         float velocityX = x;
         float velocityY = y;
         if(isAttack()) {
@@ -373,16 +376,18 @@ public abstract class Entity extends Actor {
     }
 
     public void update(float dt) {
+        if(ForestGameScreen.isPause)
+            return;
         tick++;
         stateTime += dt;
 
         if (sprite != null && animation != null)
             sprite.setRegion(animation.getKeyFrame(stateTime, true));
         if (tick % 100 == 0) {
-            currentHealth += healthRegen;
-            if (currentHealth > maxHealth) currentHealth = maxHealth;
-            currentEnergy += energyRegen;
-            if (currentEnergy > maxEnergy) currentEnergy = maxEnergy;
+            if (currentHealth < maxHealth)
+                currentHealth += healthRegen;
+            if (currentEnergy < maxEnergy)
+                currentEnergy += energyRegen;
         }
         if(target != null) {
             float distance = target.getBody().getPosition().dst(getBody().getPosition());

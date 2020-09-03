@@ -424,9 +424,9 @@ public class DungeonLocation extends Location {
     }
 
     private void createStranger(Room strangerRoom) {
-        boolean isCreate = (random.nextInt(10) + 1) == 3;
-        if(!isCreate)
-            return;
+//        boolean isCreate = (random.nextInt(10) + 1) == 3;
+//        if(!isCreate)
+//            return;
 
         stranger = new EntityStranger(world, 10, 5, BodyDef.BodyType.StaticBody, new Texture("potion08.png"));
         stranger.setType(Strangers.BLACKSMITH);
@@ -498,6 +498,7 @@ public class DungeonLocation extends Location {
     public void update(float dt) {
         if(ForestGameScreen.isPause) return;
         if(ForestGameScreen.isPlayerDead) {
+            ForestGameScreen.isPause = true;
             if (dialog == null) {
                 jo.setVisible(false);
                 hud.setVisible(false);
@@ -598,6 +599,7 @@ public class DungeonLocation extends Location {
             hud.setVisible(true);
             nextStageButton.setVisible(true);
             attackButton.setVisible(true);
+            ForestGameScreen.isPause = false;
             return true;
         }
     }
@@ -617,6 +619,7 @@ public class DungeonLocation extends Location {
             hud.setVisible(true);
             nextStageButton.setVisible(true);
             attackButton.setVisible(true);
+            ForestGameScreen.isPause = false;
             return true;
         }
     }

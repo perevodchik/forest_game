@@ -37,8 +37,7 @@ public class ForestGameScreen implements Screen {
     public static int blockXSS, blockYSS;
     public static boolean isPlayerDead = false;
     public static boolean isPause = false;
-    public static boolean isDebug = true;
-//    public static boolean isDebug = false;
+    public static boolean isDebug = false;
     public static ForestGameScreen instance = null;
 
     private static final float MULTIPLIER = 32f;
@@ -66,15 +65,15 @@ public class ForestGameScreen implements Screen {
         Player.createPlayer(world);
 
         Location location = new DungeonLocation(gsm, world, LocationData.init());
-//        Location location = new InventoryLocation(gsm, world);
         map = location.getMap();
 
         tiledMapRenderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE);
         if(isDebug)
-            camera.setToOrtho(false, 60, 30);
+//            camera.setToOrtho(false, 60, 30);
 //            camera.setToOrtho(false, 40, 20);
+            camera.setToOrtho(false, 25, 15);
         else
-            camera.setToOrtho(false, 10, 5);
+            camera.setToOrtho(false, 15, 5);
 
         setLocation(location);
 

@@ -37,7 +37,6 @@ public class EntityLive extends Entity {
         if(d < 0.5f)
             d = 0.5f;
         decreaseCurrentHealth(d);
-        System.out.println("LIVE " + getClass().getSimpleName() + " TAKE DAMAGE " + d + " AND HAVE " + getCurrentHealth() + " HEALTH");
         if(getCurrentHealth() <= 0) {
             setDead();
         }
