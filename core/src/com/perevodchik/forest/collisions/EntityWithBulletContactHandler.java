@@ -3,6 +3,7 @@ package com.perevodchik.forest.collisions;
 import com.perevodchik.forest.entity.Entity;
 import com.perevodchik.forest.entity.EntityBullet;
 import com.perevodchik.forest.entity.EntityLive;
+import com.perevodchik.forest.entity.EntityStranger;
 import com.perevodchik.forest.entity.Player;
 
 public class EntityWithBulletContactHandler implements ContactHandler {

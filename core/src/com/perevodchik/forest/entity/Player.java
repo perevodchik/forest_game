@@ -35,12 +35,14 @@ public final class Player extends EntityLive {
     public void downItem(ItemStack itemToDown) {
         if(itemToDown.isEquip()) {
             itemToDown.setEquip(false);
-            decreaseAttributes(itemToDown.item().getAttributes());
+            decreaseAttributes(itemToDown);
             ItemStack stack0 = ItemStack.empty();
             stack0.set(itemToDown);
             equipmentInventory.get(stack0.item().getSlot()).set(ItemStack.empty().setEquip(true));
             basicInventory.addItem(stack0);
         }
+        recalculateStats();
+        showAttributes();
     }
 
     public void equip(ItemStack newEquipItem) {
@@ -49,12 +51,13 @@ public final class Player extends EntityLive {
             basicInventory.remove(newEquipItem.getId());
         } else {
             ItemStack oldItem = ItemStack.from(equipmentInventory.get(newEquipItem.item().getSlot()));
-            decreaseAttributes(oldItem.item().getAttributes());
+            decreaseAttributes(oldItem);
             basicInventory.remove(newEquipItem);
             basicInventory.addItem(oldItem);
             equipmentInventory.equip(newEquipItem);
         }
-        increaseAttributes(newEquipItem.item().getAttributes());
+
+        increaseAttributes(newEquipItem);
         recalculateStats();
         showAttributes();
     }
@@ -66,35 +69,39 @@ public final class Player extends EntityLive {
     }
 
     private void showAttributes() {
-//        System.out.println("***************");
+        System.out.println("***************");
         for(Map.Entry<Attribute, List<AttributeValue>> attributeEntry: attributeMap().entrySet()) {
             String a = attributeEntry.getKey().name();
             double v = 0;
             for(AttributeValue value: attributeEntry.getValue()) {
                 v += value.value;
             }
-//            Gdx.app.log(a, String.valueOf(v));
+            Gdx.app.log(a, String.valueOf(v));
         }
-//        System.out.println("***************");
+        System.out.println("***************");
     }
 
-    public void increaseAttributes(Map<Attribute, List<AttributeValue>> attributeValueMap) {
-        for(Map.Entry<Attribute, List<AttributeValue>> attributeEntry: attributeValueMap.entrySet()) {
+    public void increaseAttributes(ItemStack stack) {
+        Gdx.app.log("equip", stack.toString());
+        for(Map.Entry<Attribute, List<AttributeValue>> attributeEntry: stack.item().getAttributes().entrySet()) {
             List<AttributeValue> attributeValues = attributeEntry.getValue();
-            for(AttributeValue value: attributeValues)
-                increaseAttribute(attributeEntry.getKey(), value);
+            for (AttributeValue value : attributeValues) {
+                AttributeValue newValue = new AttributeValue(value.id, (float) (value.value * stack.getRarity().getMultiplier()));
+                Gdx.app.error("increase attribute", value.toString() + " => " + newValue.toString());
+                increaseAttribute(attributeEntry.getKey(), newValue);
+            }
         }
-        showAttributes();
     }
 
-    public void decreaseAttributes(Map<Attribute, List<AttributeValue>> attributeValueMap) {
-        for(Map.Entry<Attribute, List<AttributeValue>> attributeEntry: attributeValueMap.entrySet()) {
+    public void decreaseAttributes(ItemStack stack) {
+        for(Map.Entry<Attribute, List<AttributeValue>> attributeEntry: stack.item().getAttributes().entrySet()) {
             Gdx.app.error(attributeEntry.getKey().toString(), attributeEntry.getValue().size() + "");
             List<AttributeValue> attributeValues = attributeEntry.getValue();
-            for(AttributeValue value: attributeValues)
+            for(AttributeValue value: attributeValues) {
+                Gdx.app.error("down attribute", value.toString());
                 decreaseAttribute(attributeEntry.getKey(), value);
+            }
         }
-        showAttributes();
     }
 
     public void increaseAttribute(Attribute attribute, AttributeValue value) {
@@ -112,7 +119,7 @@ public final class Player extends EntityLive {
         List<AttributeValue> values = attributeMap().get(attribute);
         for(AttributeValue attributeValue: values) {
             if(attributeValue.id.equals(value.id)) {
-                values.remove(value);
+                values.remove(attributeValue);
                 Gdx.app.log("find attribute", "id " + value.id.toString() + " => " + attribute.name() + " => " + value.value);
                 return;
             }

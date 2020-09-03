@@ -12,6 +12,7 @@ public class EntityJuju extends EntityMob {
 
     public EntityJuju(World world, float width, float height, BodyDef.BodyType type, Texture texture) {
         super(world, width, height, type, texture);
+        setSpeed(1.5f);
     }
 
     @Override
@@ -20,5 +21,10 @@ public class EntityJuju extends EntityMob {
         getDropList().add(new DropItemData(new ItemStack(RegistryManager.magicList), new MinMax(1, 1), new MinMax(40, 55)));
         getDropList().add(new DropItemData(new ItemStack(RegistryManager.woodBow), new MinMax(1, 1), new MinMax(1, 10)));
         getDropList().add(new DropItemData(new ItemStack(RegistryManager.ironArmor), new MinMax(1, 1), new MinMax(20, 35)));
+    }
+
+    @Override
+    public double getAttackRange() {
+        return 5;
     }
 }

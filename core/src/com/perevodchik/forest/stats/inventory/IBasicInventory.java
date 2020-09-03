@@ -1,5 +1,6 @@
 package com.perevodchik.forest.stats.inventory;
 
+import com.perevodchik.forest.items.root.Item;
 import com.perevodchik.forest.items.root.ItemStack;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public interface IBasicInventory {
     void remove(UUID id);
     void remove(ItemStack stack);
     int count(ItemStack item);
+    int count(Item item);
     void replace(ItemStack oldStack, ItemStack newStack);
     void dropInventory();
     void show();

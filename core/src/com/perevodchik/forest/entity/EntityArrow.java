@@ -19,6 +19,16 @@ public class EntityArrow extends EntityBullet {
     }
 
     @Override
+    public void setTarget(Entity target) {
+        Vector2 direction = new Vector2(Player.getPlayer().getBody().getPosition().x, Player.getPlayer().getBody().getPosition().y);
+        direction.sub(getBody().getPosition());
+        direction.nor();
+
+        float speed = getSpeed();
+        direction.scl(speed);
+    }
+
+    @Override
     public void generateTextures() {
         getSprite().setRegion(getTexture());
     }
@@ -31,6 +41,12 @@ public class EntityArrow extends EntityBullet {
     @Override
     public void update(float dt) {
         tick++;
+
+//        {
+//
+//            getBody().setLinearVelocity(velocity);
+//        }
+
         getBody().setLinearVelocity(velocity.x, velocity.y);
     }
 }

@@ -11,7 +11,7 @@ public class ItemStack {
     private int count;
     private int currentDurability;
     private boolean isEquip = false;
-    private Rarity rarity = Rarity.LEGENDARY;
+    private Rarity rarity = Rarity.COMMON;
 
     private Item item;
 
@@ -53,6 +53,10 @@ public class ItemStack {
         return rarity;
     }
 
+    public void setRarity(Rarity rarity) {
+        this.rarity = rarity;
+    }
+
     public void setEmpty() {
         count = 0;
         item = RegistryManager.empty;
@@ -63,6 +67,7 @@ public class ItemStack {
         this.count = stack.getCount();
         this.id = stack.getId();
         this.isEquip = stack.isEquip();
+        this.rarity = stack.getRarity();
         return this;
     }
 
@@ -72,6 +77,7 @@ public class ItemStack {
         if(cloneId)
             this.id = stack.getId();
         this.isEquip = stack.isEquip();
+        this.rarity = stack.getRarity();
         return this;
     }
 
@@ -124,8 +130,7 @@ public class ItemStack {
         return "ItemStack{" +
                 "id=" + id +
                 ", count=" + count +
-                ", currentDurability=" + currentDurability +
-                ", isEquip=" + isEquip +
+                ", rarity=" + rarity +
                 ", item=" + item +
                 '}';
     }

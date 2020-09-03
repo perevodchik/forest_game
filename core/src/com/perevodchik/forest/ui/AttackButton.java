@@ -13,15 +13,14 @@ import com.perevodchik.forest.items.root.ItemStack;
 import com.perevodchik.forest.locations.DungeonLocation;
 import com.perevodchik.forest.locations.Location;
 import com.perevodchik.forest.registry.RegistryManager;
+import com.perevodchik.forest.ui.blacksmith.BlacksmithWindow;
 
 public class AttackButton extends Actor {
     private Texture texture;
-    private Player player;
     private ItemStack stack;
 
     public AttackButton(Texture texture, Player player) {
         this.texture = texture;
-        this.player = player;
 
         float width = ForestGameScreen.height * 0.2f;
         float height = ForestGameScreen.height * 0.2f;
@@ -53,12 +52,7 @@ public class AttackButton extends Actor {
 
         @Override
         public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//            player.attack();
-            Location location = GameStateManager.getGameStateManager().peek();
-            if(location instanceof DungeonLocation) {
-                ((DungeonLocation) location).nextStage();
-                Player.canGoNextStage = false;
-            }
+            Player.getPlayer().attack();
         }
     }
 }

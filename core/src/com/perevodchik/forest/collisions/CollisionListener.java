@@ -15,6 +15,7 @@ public class CollisionListener implements ContactListener {
     public static void init() {
         addHandler(new BulletWithItemContactHandler());
         addHandler(new BulletWithWallContactHandler());
+        addHandler(new StrangerWithBulletContactHandler());
         addHandler(new EntityWithBulletContactHandler());
         addHandler(new EntityWithItemContactHandler());
     }

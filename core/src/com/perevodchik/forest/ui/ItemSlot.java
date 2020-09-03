@@ -11,7 +11,7 @@ public class ItemSlot extends Slot {
     private com.perevodchik.forest.enums.Slot slot;
     private static final Texture background = new Texture("stone.png");
 
-    public ItemSlot(int index, com.perevodchik.forest.enums.Slot slot, ItemStack stack, BitmapFont font, int x, int y, int width, int height) {
+    public ItemSlot(com.perevodchik.forest.enums.Slot slot, ItemStack stack, BitmapFont font, int x, int y, int width, int height) {
         super(stack, font, x, y, width, height);
         this.slot = slot;
         if(ForestGameScreen.isDebug)

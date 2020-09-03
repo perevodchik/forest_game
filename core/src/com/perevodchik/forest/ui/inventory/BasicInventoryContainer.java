@@ -25,8 +25,6 @@ public class BasicInventoryContainer extends Window {
     private TextButton nextPageButton;
     private TextButton prevPageButton;
     private Padding padding;
-//    private final InventoryLocation location;
-//    private final Window window;
     private int inventoryPage = 0;
     private static final int inventorySlotsOnPage = 15;
     private boolean canNext = false;
@@ -38,18 +36,21 @@ public class BasicInventoryContainer extends Window {
         super(padding, x, y, width, height);
         this.parent = parent;
         this.listenerClassType = listenerClassType;
+        initUI();
     }
 
     public BasicInventoryContainer(Window parent, Padding padding, int width, int height, int listenerClassType) {
         super(padding, width, height);
         this.parent = parent;
         this.listenerClassType = listenerClassType;
+        initUI();
     }
 
     public BasicInventoryContainer(Window parent, Padding padding, int listenerClassType) {
         super(padding);
         this.parent = parent;
         this.listenerClassType = listenerClassType;
+        initUI();
 //        setX((int) ((4 * 15) + (4 * ForestGameScreen.blockXS) + (ForestGameScreen.height * 0.05)));
     }
 
@@ -101,7 +102,6 @@ public class BasicInventoryContainer extends Window {
                             slotX, slotY,
                             ForestGameScreen.blockXS, ForestGameScreen.blockXS);
                     InputListener listener = null;
-                    Gdx.app.error("parent is null?", String.valueOf((parent == null)));
                     switch (listenerClassType) {
                         case 0:
                             listener = new InventoryWindow.SlotController(slot, parent);

@@ -1,6 +1,5 @@
 package com.perevodchik.forest.ui.blacksmith;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -8,12 +7,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.perevodchik.forest.ForestGameScreen;
 import com.perevodchik.forest.GameStateManager;
+import com.perevodchik.forest.entity.Player;
+import com.perevodchik.forest.enums.Rarity;
+import com.perevodchik.forest.items.root.ItemStack;
+import com.perevodchik.forest.registry.RegistryManager;
+import com.perevodchik.forest.storage.Storage;
 import com.perevodchik.forest.ui.Padding;
 import com.perevodchik.forest.ui.Slot;
 import com.perevodchik.forest.ui.Window;
 import com.perevodchik.forest.ui.inventory.BasicInventoryContainer;
 import com.perevodchik.forest.ui.inventory.EquipmentInventoryContainer;
 import com.perevodchik.forest.utils.FontUtil;
+
+import net.dermetfan.gdx.physics.box2d.PositionController;
 
 public class BlacksmithWindow extends Window {
     private BasicInventoryContainer basicContainer;
@@ -38,7 +44,7 @@ public class BlacksmithWindow extends Window {
     @Override
     public void initUI() {
         basicContainer = new BasicInventoryContainer(this, new Padding(), 1);
-        equipmentContainer = new EquipmentInventoryContainer(this);
+        equipmentContainer = new EquipmentInventoryContainer(this, 1);
 
         blacksmithContainer = new BlacksmithContainer(new Padding(),
                 ForestGameScreen.width / 1.62f,
@@ -71,6 +77,40 @@ public class BlacksmithWindow extends Window {
 
     public BlacksmithContainer getBlacksmithContainer() {
         return blacksmithContainer;
+    }
+
+    public static class UpgradeListener extends InputListener {
+        private BlacksmithContainer window;
+
+        public UpgradeListener(BlacksmithContainer window) {
+            this.window = window;
+        }
+
+        @Override
+        public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+            int need = window.getUpgradeCost();
+            int inInventory = Player.getPlayer().getBasicInventory().count(RegistryManager.goldenCoin);
+
+            if(inInventory >= need) {
+                ItemStack stack = window.getStackToUpgrade();
+                if((stack.getRarity().getGrade() + 1) <= Rarity.values().length) {
+                    int newGrade = stack.getRarity().getGrade() + 1;
+                    Rarity newRarity = null;
+                    for (Rarity r : Rarity.values()) {
+                        if (r.getGrade() == newGrade)
+                            newRarity = r;
+                    }
+                    if(newRarity != null) {
+                        window.getStackToUpgrade().setRarity(newRarity);
+                        Player.getPlayer().getBasicInventory().remove(new ItemStack(RegistryManager.goldenCoin, need));
+                        Storage.storage().savePlayerState(Player.getPlayer());
+                    }
+                }
+                window.setStack(window.getStackToUpgrade());
+            }
+
+            return true;
+        }
     }
 
     public static class CloseBlacksmithController extends InputListener {

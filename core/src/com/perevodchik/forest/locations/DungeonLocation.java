@@ -2,11 +2,13 @@ package com.perevodchik.forest.locations;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -15,7 +17,9 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.github.czyzby.noise4j.map.Grid;
 import com.github.czyzby.noise4j.map.generator.room.dungeon.DungeonGenerator;
@@ -25,9 +29,11 @@ import com.perevodchik.forest.GameStateManager;
 import com.perevodchik.forest.entity.Entity;
 import com.perevodchik.forest.entity.EntityItem;
 import com.perevodchik.forest.entity.EntityJuju;
+import com.perevodchik.forest.entity.EntityStranger;
 import com.perevodchik.forest.entity.EntityWall;
 import com.perevodchik.forest.entity.Player;
 import com.perevodchik.forest.enums.RoomType;
+import com.perevodchik.forest.enums.Strangers;
 import com.perevodchik.forest.enums.TileType;
 import com.perevodchik.forest.items.root.ItemStack;
 import com.perevodchik.forest.map.Room;
@@ -37,6 +43,7 @@ import com.perevodchik.forest.ui.AttackButton;
 import com.perevodchik.forest.ui.DeathWindow;
 import com.perevodchik.forest.ui.NextStageButton;
 import com.perevodchik.forest.ui.Padding;
+import com.perevodchik.forest.ui.TalkButton;
 import com.perevodchik.forest.ui.hud.Hud;
 import com.perevodchik.forest.ui.jo.Jo;
 import com.perevodchik.forest.utils.FontUtil;
@@ -54,12 +61,14 @@ public class DungeonLocation extends Location {
     private CollisionListener collisionListener;
     private static final Random random = new Random();
     private static AttackButton attackButton = null;
+    private static TalkButton talkButton = null;
     private static Jo jo = null;
     private static Hud hud = null;
     private static NextStageButton nextStageButton = null;
     private static DeathWindow dialog = null;
     private Tile door;
     private LocationData locationData;
+    private EntityStranger stranger = null;
 
     public DungeonLocation(GameStateManager gsm, World world, LocationData locationData) {
         super(gsm, world);
@@ -96,10 +105,14 @@ public class DungeonLocation extends Location {
             hud = new Hud(new Texture("bag.png"), 50);
         if(nextStageButton == null)
             nextStageButton = new NextStageButton();
+        if(talkButton == null) {
+            talkButton = new TalkButton(new Texture("bubble_small.png"), stranger);
+        }
         getStage().addActor(attackButton);
         getStage().addActor(jo);
         getStage().addActor(hud);
         getStage().addActor(nextStageButton);
+        getStage().addActor(talkButton);
     }
 
     public void nextStage(LocationData locationData) {
@@ -157,7 +170,7 @@ public class DungeonLocation extends Location {
     private void spawnMobs(Room room) {
         int mobsCount = random.nextInt(room.getHeight() >= room.getWidth() ? room.getWidth() : room.getWidth());
 
-        for(int c = 0; c < mobsCount; c++) {
+        for(int c = 0; c < 1; c++) {
             Entity juju = new EntityJuju(world, 4, 4, BodyDef.BodyType.DynamicBody, new Texture("model.png"));
             juju.setLocation(this);
             int     pX = random.nextInt(room.getWidth()) + room.getX(),
@@ -388,16 +401,38 @@ public class DungeonLocation extends Location {
             }
         }
 
+        Room strangerRoom = null;
+        if(rooms.size() == 1)
+            strangerRoom = rooms.get(0);
+
         for(Room r: rooms) {
             boolean playerInThisRoom = r.inRoom(Player.getPlayer().getBody().getPosition());
             if(!playerInThisRoom)
                 spawnMobs(r);
+
+            if(strangerRoom == null)
+                if(random.nextBoolean() && !playerInThisRoom)
+                    strangerRoom = r;
+
         }
+        createStranger(strangerRoom);
         Player.getPlayer().setLocation(this);
         getActorsToBeAdded().add(Player.getPlayer());
 
         layers.add(layer);
         setMap(map);
+    }
+
+    private void createStranger(Room strangerRoom) {
+        boolean isCreate = (random.nextInt(10) + 1) == 3;
+        if(!isCreate)
+            return;
+
+        stranger = new EntityStranger(world, 10, 5, BodyDef.BodyType.StaticBody, new Texture("potion08.png"));
+        stranger.setType(Strangers.BLACKSMITH);
+        int sX = (strangerRoom.getWidth() / 2 + strangerRoom.getX()), sY = (strangerRoom.getHeight() / 2 + strangerRoom.getY());
+        stranger.getBody().setTransform(sX, sY, stranger.getBody().getAngle());
+        getActorsToBeAdded().add(stranger);
     }
 
     private void setDoor(TiledMapTileLayer layer, int x, int y) {
@@ -489,18 +524,18 @@ public class DungeonLocation extends Location {
             }
         }
         if(tick % 322 == 0) {
-            int rId = random.nextInt(RegistryManager.idIndex - 1) + 1;
-            ItemStack stack = new ItemStack(RegistryManager.getInstance().getItemById(rId), 1);
+//            int rId = random.nextInt(RegistryManager.idIndex - 1) + 1;
+//            ItemStack stack = new ItemStack(RegistryManager.getInstance().getItemById(rId), 1);
 //            ItemStack stack = new ItemStack(RegistryManager.getInstance().getItemByName("moon_armor"), 1);
-            if(stack.item() != null) {
-                Room room = rooms.get(random.nextInt(rooms.size()));
-                float x = room.getX() + (random.nextFloat() + random.nextInt(room.getWidth()));
-                float y = room.getY()  + (random.nextFloat() + random.nextInt(room.getHeight()));
-                EntityItem item = new EntityItem(stack, world, 3, 3, BodyDef.BodyType.DynamicBody);
-                item.getBody().setTransform(x, y, 0);
-                item.setLocation(this);
-                getActorsToBeAdded().add(item);
-            }
+//            if(stack.item() != null) {
+//                Room room = rooms.get(random.nextInt(rooms.size()));
+//                float x = room.getX() + (random.nextFloat() + random.nextInt(room.getWidth()));
+//                float y = room.getY()  + (random.nextFloat() + random.nextInt(room.getHeight()));
+//                EntityItem item = new EntityItem(stack, world, 3, 3, BodyDef.BodyType.DynamicBody);
+//                item.getBody().setTransform(x, y, 0);
+//                item.setLocation(this);
+//                getActorsToBeAdded().add(item);
+//            }
         }
         Iterator<Entity> entityToBeAdded = getActorsToBeAdded().iterator();
         while (entityToBeAdded.hasNext()) {
@@ -542,6 +577,10 @@ public class DungeonLocation extends Location {
 
     public List<Room> getRooms() {
         return rooms;
+    }
+
+    public EntityStranger getStranger() {
+        return stranger;
     }
 
     private class NewGameListener extends InputListener {

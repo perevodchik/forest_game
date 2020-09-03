@@ -62,6 +62,7 @@ public abstract class Entity extends Actor {
     private boolean isMoving = false;
     private boolean isAttack = false;
     private boolean isDead = false;
+    private boolean canTakeDamage = true;
     private Timer timer;
 
     private Texture texture;
@@ -167,7 +168,7 @@ public abstract class Entity extends Actor {
         decreaseCurrentEnergy(cost);
 
         float attackSpeed = 1f;
-        float bulletSpeed = maxSpeed / 3;
+        float bulletSpeed = maxSpeed / 3 + getSpeed();
         if(this instanceof Player) {
             attackSpeed = attribute(Attribute.ATTACK_SPEED);
             Map<Attribute, List<AttributeValue>> attributes = ((Player) get()).getEquipmentInventory().get(Slot.MAIN_HAND).item().getAttributes();
@@ -204,6 +205,8 @@ public abstract class Entity extends Actor {
                         direction.cpy(),
                         angle);
                 arrow.setOwner(get());
+                if(target != null)
+                    arrow.setTarget(target);
                 DamageData data = new DamageData(get(),
                         attribute(Attribute.ATTACK),
                         DamageSource.ENTITY);
@@ -242,40 +245,40 @@ public abstract class Entity extends Actor {
             float speed = 0;
             for (AttributeValue value : attributeMap.get(Attribute.SPEED)) {
                 speed += value.value;
-//                Gdx.app.log(String.valueOf(Attribute.SPEED), speed + "");
             }
+            Gdx.app.log(String.valueOf(Attribute.SPEED), speed + "");
             setSpeed(speed);
         }
         if (attributeMap.containsKey(Attribute.HEALTH)) {
             float health = 0;
             for (AttributeValue value : attributeMap.get(Attribute.HEALTH)) {
                 health += value.value;
-//                Gdx.app.log(String.valueOf(Attribute.HEALTH), health + "");
             }
+            Gdx.app.log(String.valueOf(Attribute.HEALTH), health + "");
             setHealth(health);
         }
         if (attributeMap.containsKey(Attribute.ENERGY)) {
             float energy = 0;
             for (AttributeValue value : attributeMap.get(Attribute.ENERGY)) {
                 energy += value.value;
-//                Gdx.app.log(String.valueOf(Attribute.ENERGY), energy + "");
             }
+            Gdx.app.log(String.valueOf(Attribute.ENERGY), energy + "");
             setCurrentEnergy(energy);
         }
         if (attributeMap.containsKey(Attribute.HEALTH_REGEN)) {
             float healthRegen = 0;
             for (AttributeValue value : attributeMap.get(Attribute.HEALTH_REGEN)) {
                 healthRegen += value.value;
-//                Gdx.app.log(String.valueOf(Attribute.HEALTH_REGEN), healthRegen + "");
             }
+            Gdx.app.log(String.valueOf(Attribute.HEALTH_REGEN), healthRegen + "");
             this.healthRegen = healthRegen;
         }
         if (attributeMap.containsKey(Attribute.ENERGY_REGEN)) {
             float energyRegen = 0;
             for (AttributeValue value : attributeMap.get(Attribute.ENERGY_REGEN)) {
                 energyRegen += value.value;
-//                Gdx.app.log(String.valueOf(Attribute.ENERGY_REGEN), energyRegen + "");
             }
+            Gdx.app.log(String.valueOf(Attribute.ENERGY_REGEN), energyRegen + "");
             this.energyRegen = energyRegen;
         }
     }
@@ -312,6 +315,10 @@ public abstract class Entity extends Actor {
             currentHealth = 0;
         else
             currentHealth -= value;
+    }
+
+    public void setVelocity(Vector2 v) {
+        setVelocity(v.x, v.y);
     }
 
     public void setVelocity(float x, float y) {
@@ -450,6 +457,8 @@ public abstract class Entity extends Actor {
 
     private void setHealth(float maxHealth) {
         this.maxHealth = maxHealth;
+        if(getCurrentHealth() > maxHealth)
+            setCurrentHealth(maxHealth);
     }
 
     public Body getBody() {
@@ -494,5 +503,17 @@ public abstract class Entity extends Actor {
 
     public Entity getTarget() {
         return target;
+    }
+
+    public void setCanTakeDamage(boolean canTakeDamage) {
+        this.canTakeDamage = canTakeDamage;
+    }
+
+    public boolean isCanTakeDamage() {
+        return canTakeDamage;
+    }
+
+    public double getAttackRange() {
+        return 0.8;
     }
 }

@@ -129,6 +129,17 @@ public class BasicInventory implements IBasicInventory {
     }
 
     @Override
+    public int count(Item item) {
+        int c = 0;
+        for(ItemStack stack: items) {
+            if(stack.item() == item) {
+                c += stack.getCount();
+            }
+        }
+        return c;
+    }
+
+    @Override
     public void replace(ItemStack oldStack, ItemStack newStack) {
         for(ItemStack stack1: items) {
             Gdx.app.log("check itemId", "[" + stack1.getId().toString() + "] => [" + newStack.getId().toString() + "]");

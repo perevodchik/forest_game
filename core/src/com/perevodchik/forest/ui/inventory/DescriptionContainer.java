@@ -141,6 +141,7 @@ public class DescriptionContainer extends Group {
             for(AttributeValue v: e.getValue()) {
                 value += v.value;
             }
+            value *= stack.getRarity().getMultiplier();
             String showAttribute = attribute.concat(" ").concat(String.valueOf(value));
             items[counter++] = showAttribute;
         }
@@ -174,7 +175,7 @@ public class DescriptionContainer extends Group {
         @Override
         public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
             ItemStack stack = ((InventoryWindow) window).getSelectedStack();
-            player.decreaseAttributes(((InventoryWindow) window).getSelectedStack().item().getAttributes());
+            player.decreaseAttributes(((InventoryWindow) window).getSelectedStack());
             stack.setEmpty();
             if(stack.isEquip()) {
                 player.getEquipmentInventory().get(((InventoryWindow) window).getSelectedStack().item().getSlot()).set(ItemStack.empty());

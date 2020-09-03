@@ -6,6 +6,7 @@ import com.badlogic.gdx.sql.DatabaseCursor;
 import com.badlogic.gdx.sql.DatabaseFactory;
 import com.badlogic.gdx.sql.SQLiteGdxException;
 import com.perevodchik.forest.entity.Player;
+import com.perevodchik.forest.enums.Rarity;
 import com.perevodchik.forest.enums.Slot;
 import com.perevodchik.forest.items.root.ItemStack;
 import com.perevodchik.forest.registry.RegistryManager;
@@ -20,13 +21,14 @@ import java.util.UUID;
 
 public final class Storage {
     static final String DATABASE_NAME = "forest.db";
-    static final int DATABASE_VERSION = 1;
+    static final int DATABASE_VERSION = 2;
     static final String TABLE_INVENTORY_BASIC = "inventory_basic";
     static final String TABLE_INVENTORY_EQUIPMENT = "inventory_equipment";
     static final String PLAYER_TABLE = "player";
     static final String COLUMN_ID = "id";
     static final String COLUMN_ITEM_ID = "item_id";
     static final String COLUMN_ITEM_UUID = "item_uuid";
+    static final String COLUMN_ITEM_GRADE = "item_grade";
     static final String COLUMN_ITEM_STACK_LEVEL = "item_stack_level";
     static final String COLUMN_ITEM_STACK_COUNT = "item_stack_count";
     static final String COLUMN_ITEM_SLOT = "item_slot";
@@ -78,13 +80,15 @@ public final class Storage {
                 .append("INSERT INTO ").append(TABLE_INVENTORY_BASIC).append(" (")
                 .append(COLUMN_ITEM_ID).append(", ")
                 .append(COLUMN_ITEM_UUID).append(", ")
+                .append(COLUMN_ITEM_GRADE).append(", ")
                 .append(COLUMN_ITEM_STACK_COUNT).append(")")
                 .append(" VALUES (")
                 .append(stack.item().getId()).append(", '")
                 .append(stack.getId().toString()).append("', ")
+                .append(stack.getRarity().getGrade()).append(", ")
                 .append(stack.getCount())
                 .append(");");
-//        Gdx.app.log(TABLE_INVENTORY_BASIC, saveItemQuery.toString());
+        Gdx.app.log(TABLE_INVENTORY_BASIC, saveItemQuery.toString());
         try {
             db.execSQL(saveItemQuery.toString());
         } catch (SQLiteGdxException sqlE) {
@@ -97,10 +101,12 @@ public final class Storage {
                 .append("INSERT INTO ").append(TABLE_INVENTORY_EQUIPMENT).append(" (")
                 .append(COLUMN_ITEM_ID).append(", ")
                 .append(COLUMN_ITEM_UUID).append(", ")
+                .append(COLUMN_ITEM_GRADE).append(", ")
                 .append(COLUMN_ITEM_STACK_COUNT).append(")")
                 .append(" VALUES (")
                 .append(stack.item().getId()).append(", '")
                 .append(stack.getId().toString()).append("', ")
+                .append(stack.getRarity().getGrade()).append(", ")
                 .append(stack.getCount())
                 .append(");");
         Gdx.app.log(TABLE_INVENTORY_EQUIPMENT, saveItemQuery.toString());
@@ -120,6 +126,8 @@ public final class Storage {
         loadBasicInventory(player);
         loadEquipmentInventory(player);
         player.recalculateStats();
+        Gdx.app.error(TABLE_INVENTORY_BASIC, player.getBasicInventory().toString());
+        Gdx.app.error(TABLE_INVENTORY_EQUIPMENT, player.getEquipmentInventory().toString());
     }
 
     public void loadBasicInventory(Player player) {
@@ -128,6 +136,7 @@ public final class Storage {
         StringBuilder loadBasicInventoryQuery = new StringBuilder()
                 .append("SELECT ")
                 .append(COLUMN_ITEM_ID).append(", ")
+                .append(COLUMN_ITEM_GRADE).append(", ")
                 .append(COLUMN_ITEM_STACK_COUNT).append(", ")
                 .append(COLUMN_ITEM_UUID).append(" FROM ")
                 .append(TABLE_INVENTORY_BASIC).append(";");
@@ -136,9 +145,14 @@ public final class Storage {
             if(c == null) return;
             while(c.next()) {
                 int itemId = c.getInt(0);
-                int itemStackCount = c.getInt(1);
-                UUID itemStackUuid = UUID.fromString(c.getString(2));
+                int itemRarity = c.getInt(1);
+                int itemStackCount = c.getInt(2);
+                UUID itemStackUuid = UUID.fromString(c.getString(3));
+                Rarity rarity = Rarity.getRarityByGrade(itemRarity);
+                if(rarity == null)
+                    rarity = Rarity.COMMON;
                 ItemStack stack1 = new ItemStack(RegistryManager.getInstance().getItemById(itemId), itemStackCount, itemStackUuid);
+                stack1.setRarity(rarity);
                 if(stack1.item() != RegistryManager.empty)
                     basicInventory.addItem(stack1);
             }
@@ -154,6 +168,7 @@ public final class Storage {
         StringBuilder loadBasicInventoryQuery = new StringBuilder()
                 .append("SELECT ")
                 .append(COLUMN_ITEM_ID).append(", ")
+                .append(COLUMN_ITEM_GRADE).append(", ")
                 .append(COLUMN_ITEM_STACK_COUNT).append(", ")
                 .append(COLUMN_ITEM_UUID).append(" FROM ")
                 .append(TABLE_INVENTORY_EQUIPMENT).append(";");
@@ -162,9 +177,14 @@ public final class Storage {
             if(c == null) return;
             while(c.next()) {
                 int itemId = c.getInt(0);
-                int itemStackCount = c.getInt(1);
-                UUID itemStackUuid = UUID.fromString(c.getString(2));
+                int itemRarity = c.getInt(1);
+                int itemStackCount = c.getInt(2);
+                UUID itemStackUuid = UUID.fromString(c.getString(3));
+                Rarity rarity = Rarity.getRarityByGrade(itemRarity);
+                if(rarity == null)
+                    rarity = Rarity.COMMON;
                 ItemStack stack1 = new ItemStack(RegistryManager.getInstance().getItemById(itemId), itemStackCount, itemStackUuid);
+                stack1.setRarity(rarity);
                 if(stack1.item() != RegistryManager.empty)
                     player.equip(stack1);
             }
@@ -206,6 +226,7 @@ public final class Storage {
                     .append("CREATE TABLE IF NOT EXISTS ").append(TABLE_INVENTORY_BASIC).append(" (")
                     .append(COLUMN_ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
                     .append(COLUMN_ITEM_ID).append(" INTEGER NOT NULL, ")
+                    .append(COLUMN_ITEM_GRADE).append(" INTEGER NOT NULL, ")
                     .append(COLUMN_ITEM_STACK_COUNT).append(" INTEGER NOT NULL DEFAULT 1, ")
                     .append(COLUMN_ITEM_SLOT).append(" INTEGER NOT NULL DEFAULT 2, ")
                     .append(COLUMN_ITEM_UUID).append(" TEXT NOT NULL);");
@@ -213,6 +234,7 @@ public final class Storage {
                     .append("CREATE TABLE IF NOT EXISTS ").append(TABLE_INVENTORY_EQUIPMENT).append(" (")
                     .append(COLUMN_ID).append(" INTEGER PRIMARY KEY AUTOINCREMENT, ")
                     .append(COLUMN_ITEM_ID).append(" INTEGER NOT NULL, ")
+                    .append(COLUMN_ITEM_GRADE).append(" INTEGER NOT NULL, ")
                     .append(COLUMN_ITEM_STACK_COUNT).append(" INTEGER NOT NULL DEFAULT 1, ")
                     .append(COLUMN_ITEM_SLOT).append(" TEXT DEFAULT 'MAIN_HAND', ")
                     .append(COLUMN_ITEM_UUID).append(" TEXT NOT NULL);");

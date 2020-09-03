@@ -2,13 +2,18 @@ package com.perevodchik.forest.collisions;
 
 import com.perevodchik.forest.entity.Entity;
 import com.perevodchik.forest.entity.EntityItem;
+import com.perevodchik.forest.entity.EntityStranger;
 import com.perevodchik.forest.entity.Player;
 
 public class EntityWithItemContactHandler implements ContactHandler {
     Player entity;
     EntityItem item;
+
     @Override
     public boolean isValid(Entity entity0, Entity entity1) {
+        if(entity0 instanceof EntityStranger || entity1 instanceof EntityStranger)
+            return false;
+
         if(entity0 instanceof Player && entity1 instanceof EntityItem) {
             entity = (Player) entity0;
             item = (EntityItem) entity1;

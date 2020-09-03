@@ -24,7 +24,6 @@ public class HudController extends InputListener {
                         0,
                         ForestGameScreen.width,
                         ForestGameScreen.height)
-//                new BlacksmithWindow(new Padding())
         );
 
         ForestGameScreen.isPause = true;

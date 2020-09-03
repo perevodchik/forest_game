@@ -34,7 +34,7 @@ public class InventoryWindow extends Window {
         marginX = (int) (ForestGameScreen.width * 0.05);
         marginY = (int) (ForestGameScreen.height * 0.05);
         basicContainer = new BasicInventoryContainer(this, new Padding(), 0);
-        equipmentContainer = new EquipmentInventoryContainer(this);
+        equipmentContainer = new EquipmentInventoryContainer(this, 0);
         descriptionContainer = new DescriptionContainer(
                 this,
                 Math.round(ForestGameScreen.width / 1.55f),
@@ -51,7 +51,7 @@ public class InventoryWindow extends Window {
         addActor(basicContainer);
         addActor(equipmentContainer);
         addActor(descriptionContainer);
-//        addActor(backButton);
+        addActor(backButton);
 
         if(ForestGameScreen.isDebug)
             debugAll();
@@ -105,12 +105,11 @@ public class InventoryWindow extends Window {
         @Override
         public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
             Slot.setSelectedSlot(slot);
+            Gdx.app.debug("select slot", slot.toString());
             if(window != null) {
-                Gdx.app.error("window", "not null");
                 ((InventoryWindow) window).getDescriptionContainer().setItemStack(slot.getStack());
                 ((InventoryWindow) window).selectStack(slot.getStack());
-            } else
-                Gdx.app.error("window", "null");
+            }
             return true;
         }
     }
